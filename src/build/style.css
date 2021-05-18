@@ -1,0 +1,40 @@
+body {
+    background: #222;
+    color: #fafafa;
+    font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
+}
+
+.link-label {
+    background: #4a9bff;
+    color: #fff;
+    font-size: 0.75em;
+    padding: 0.1em 0.5em;
+    border-radius: 0.33em;
+}
+
+.name {
+    margin-right: 0.5em;
+    color: #ccc;
+}
+
+.root-name {
+    color: #fafafa;
+}
+
+.branch {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+}
+
+.node {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+    padding-left: 2em;
+    line-height: 1.5em;
+}
+
+.root-node {
+    margin-bottom: 1em;
+}

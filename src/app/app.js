@@ -10,11 +10,12 @@ const ReactDOM = require('react-dom');
 const { createElement: h } = require('react');
 const getGitTree = require('./getGitTree');
 const Tree = require('./components/Tree');
+const { join } = require('path');
+const { homedir } = require('os');
 
-const baseDir = 'C:/Users/Amiran/git/';
+const baseDir = join(homedir(), './git/');
 
 window.addEventListener('DOMContentLoaded', async () => {
-
     const tree = await getGitTree(baseDir)
 
     ReactDOM.render(

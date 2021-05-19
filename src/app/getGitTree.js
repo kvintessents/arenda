@@ -11,7 +11,7 @@ function map(array, fn) {
 }
 
 // const defaultFilter = (package) => package.name.includes('stream');
-const defaultFilter = (name) => name.includes('test');
+const defaultFilter = (name) => name.includes('@tidal');
 // const defaultFilter = () => true;
 
 async function getGitTree(path, { packageFilter = defaultFilter } = {}) {

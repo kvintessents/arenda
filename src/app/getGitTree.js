@@ -1,6 +1,6 @@
-const fs = require('fs');
-const { promisify } = require('util');
-const { join } = require('path');
+import fs from 'fs';
+import { promisify } from 'util';
+import { join } from 'path';
 
 const readdir = promisify(fs.readdir).bind(fs);
 const exists = promisify(fs.exists).bind(fs);
@@ -11,7 +11,7 @@ function map(array, fn) {
 }
 
 // const defaultFilter = (package) => package.name.includes('stream');
-const defaultFilter = (name) => name.includes('@tidal');
+const defaultFilter = (name) => name.includes('test');
 // const defaultFilter = () => true;
 
 async function getGitTree(path, { packageFilter = defaultFilter } = {}) {
@@ -37,42 +37,40 @@ async function getGitTree(path, { packageFilter = defaultFilter } = {}) {
         }
     });
 
-    console.log(packages);
-
     return packages;
 }
 
 async function getNodeModulesTree(nodeModulesPath, { packageFilter = () => true } = {}) {
     const topSubPackages = await readdir(nodeModulesPath);
 
-    subPackages = await map(topSubPackages, async (package) => {
-        if (package.startsWith('@')) {
-            const scopedPackages = await readdir(join(nodeModulesPath, package));
+    let subPackages = await map(topSubPackages, async (subPackage) => {
+        if (subPackage.startsWith('@')) {
+            const scopedPackages = await readdir(join(nodeModulesPath, subPackage));
 
-            return scopedPackages.map(scopedPackage => join(package, scopedPackage));
+            return scopedPackages.map(scopedPackage => join(subPackage, scopedPackage));
         }
 
-        return package;
+        return subPackage;
     });
 
     subPackages = subPackages.flat().filter(packageFilter);
 
-    subPackages = await map(subPackages, async (package) => {
-        const path = join(nodeModulesPath, package);
+    subPackages = await map(subPackages, async (subPackage) => {
+        const path = join(nodeModulesPath, subPackage);
         const fileInfo = await lstat(path);
-        const subModulesPath = join(nodeModulesPath, package, 'node_modules');
+        const subModulesPath = join(nodeModulesPath, subPackage, 'node_modules');
         const subModulesExist = await exists(subModulesPath);
 
         const subModules = subModulesExist ? await getNodeModulesTree(
             subModulesPath,
             {
-                name: package,
+                name: subPackage,
                 packageFilter
             }
         ) : [];
 
         return {
-            name: package,
+            name: subPackage,
             path: path,
             linked: fileInfo.isSymbolicLink(),
             root: false,
@@ -85,4 +83,4 @@ async function getNodeModulesTree(nodeModulesPath, { packageFilter = () => true 
 
 
 
-module.exports = getGitTree;
+export default getGitTree;

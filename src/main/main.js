@@ -7,6 +7,7 @@ function createWindow () {
         width: 600,
         height: 900,
         webPreferences: {
+            nodeIntegration: false,
             preload: path.join(__dirname, '../build/preload-bundle.js')
         }
     })

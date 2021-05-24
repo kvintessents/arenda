@@ -56,6 +56,7 @@ async function getGitTree(rootPath, { packageFilter = defaultFilter, showLocalPr
         return {
             name: name,
             path: path,
+            linkable: false,
             linked: false,
             root: true,
             modules: await getNodeModulesTree(
@@ -78,7 +79,7 @@ async function getGitTree(rootPath, { packageFilter = defaultFilter, showLocalPr
     return projectTree;
 }
 
-async function getNodeModulesTree(nodeModulesPath, { packageFilter } = {}) {
+async function getNodeModulesTree(nodeModulesPath, { packageFilter, showLocalProjectsOnly, projectNames } = {}) {
     if (!(await exists(nodeModulesPath))) {
         return [];
     }
@@ -106,11 +107,12 @@ async function getNodeModulesTree(nodeModulesPath, { packageFilter } = {}) {
         const subModulesPath = join(nodeModulesPath, subPackage, 'node_modules');
 
         const name = normalisePackageName(subPackage);
-        const modules = await getNodeModulesTree(subModulesPath, { packageFilter });
+        const modules = await getNodeModulesTree(subModulesPath, { packageFilter, showLocalProjectsOnly, projectNames });
 
         return {
             name: name,
             path: path,
+            linkable: projectNames.includes(name),
             linked: fileInfo.isSymbolicLink(),
             root: false,
             modules: modules

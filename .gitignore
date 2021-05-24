@@ -1,1 +1,3 @@
 node_modules
+src/build/preload-bundle.js
+src/build/style-bundle.css

@@ -26,7 +26,7 @@ function normalisePackageName(name) {
     return name.replaceAll('\\', '/')
 }
 
-async function getGitTree(rootPath, { packageFilter = defaultFilter } = {}) {
+async function getGitTree(rootPath, { packageFilter = defaultFilter, showLocalProjectsOnly = true } = {}) {
     if (!(await exists(rootPath))) {
         return [];
     }
@@ -49,6 +49,9 @@ async function getGitTree(rootPath, { packageFilter = defaultFilter } = {}) {
         }
     );
 
+    // [ '@amiran/my-project', '@amiran/my-other-project', ... ]
+    const projectNames = namedProjects.map(({name}) => name);
+
     const projectTree = await map(namedProjects, async ({ name, path }) => {
         return {
             name: name,
@@ -58,9 +61,15 @@ async function getGitTree(rootPath, { packageFilter = defaultFilter } = {}) {
             modules: await getNodeModulesTree(
                 join(path, 'node_modules'),
                 {
-                    packageFilter,
-                    projectNames: namedProjects.map(({ name }) => name),
-                    showLocalProjectsOnly: true,
+                    packageFilter: (subPackage) => {
+                        const name = normalisePackageName(subPackage);
+                
+                        if (showLocalProjectsOnly) {
+                            return projectNames.includes(name) && packageFilter(name);
+                        }
+                
+                        return packageFilter(name);
+                    },
                 },
             ),
         }
@@ -69,9 +78,7 @@ async function getGitTree(rootPath, { packageFilter = defaultFilter } = {}) {
     return projectTree;
 }
 
-async function getNodeModulesTree(nodeModulesPath, { packageFilter, showLocalProjectsOnly, projectNames } = {}) {
-    console.log(projectNames);
-
+async function getNodeModulesTree(nodeModulesPath, { packageFilter } = {}) {
     if (!(await exists(nodeModulesPath))) {
         return [];
     }
@@ -90,15 +97,7 @@ async function getNodeModulesTree(nodeModulesPath, { packageFilter, showLocalPro
     });
 
     // Filtering
-    subPackages = subPackages.flat().filter((subPackage) => {
-        const name = normalisePackageName(subPackage);
-
-        if (showLocalProjectsOnly) {
-            return projectNames.includes(name) && packageFilter(name);
-        }
-
-        return packageFilter(name);
-    });
+    subPackages = subPackages.flat().filter(packageFilter);
 
     // subPackage is "packageName" or "@scoped/packageName" or "@scoped\packageName"
     subPackages = await map(subPackages, async subPackage => {

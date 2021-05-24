@@ -6,7 +6,7 @@ import TreePage from './pages/TreePage.jsx';
 import getGitTree from './getGitTree';
 
 const baseDir = join(homedir(), './git/');
-const initFilterValue = 'test';
+const initFilterValue = '';
 
 window.addEventListener('DOMContentLoaded', async () => {
     const tree = await getGitTree(baseDir, {

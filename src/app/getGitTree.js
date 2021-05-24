@@ -26,48 +26,59 @@ function normalisePackageName(name) {
     return name.replaceAll('\\', '/')
 }
 
-async function getGitTree(path, { packageFilter = defaultFilter } = {}) {
-    if (!(await exists(path))) {
+async function getGitTree(rootPath, { packageFilter = defaultFilter } = {}) {
+    if (!(await exists(rootPath))) {
         return [];
     }
 
-    const dirs = await readdir(path);
-
+    const dirs = await readdir(rootPath);
     const packageJsonExists = await map(dirs, async (dir) => {
-        return await exists(join(path, dir, 'package.json'));
+        return await exists(join(rootPath, dir, 'package.json'));
     });
 
-    const npmProjects = dirs.filter((dir, i) => packageJsonExists[i]);
+    const namedProjects = await map(
+        // Only allow projects with existing package.json files
+        dirs.filter((dir, i) => packageJsonExists[i]),
 
-    const packages = await map(npmProjects, async (projectDirName) => {
-        const nodeModulesPath = join(path, projectDirName, 'node_modules');
+        // output { name: package.json name, path: path to git dir }
+        async (projectDirName) => {
+            return {
+                name: await getPackageName(join(rootPath, projectDirName, 'package.json')),
+                path: join(rootPath, projectDirName),
+            }
+        }
+    );
 
-        const [name, modules] = await Promise.all([
-            getPackageName(join(path, projectDirName, 'package.json')),
-            getNodeModulesTree(nodeModulesPath, {
-                packageFilter
-            }),
-        ])
-
+    const projectTree = await map(namedProjects, async ({ name, path }) => {
         return {
             name: name,
-            path: join(path, projectDirName),
+            path: path,
             linked: false,
             root: true,
-            modules: modules,
+            modules: await getNodeModulesTree(
+                join(path, 'node_modules'),
+                {
+                    packageFilter,
+                    projectNames: namedProjects.map(({ name }) => name),
+                    showLocalProjectsOnly: true,
+                },
+            ),
         }
     });
 
-    return packages;
+    return projectTree;
 }
 
-async function getNodeModulesTree(nodeModulesPath, { packageFilter = () => true } = {}) {
+async function getNodeModulesTree(nodeModulesPath, { packageFilter, showLocalProjectsOnly, projectNames } = {}) {
+    console.log(projectNames);
+
     if (!(await exists(nodeModulesPath))) {
         return [];
     }
 
     const topSubPackages = await readdir(nodeModulesPath);
 
+    // Normalisation
     let subPackages = await map(topSubPackages, async (subPackage) => {
         if (subPackage.startsWith('@')) {
             const scopedPackages = await readdir(join(nodeModulesPath, subPackage));
@@ -78,8 +89,15 @@ async function getNodeModulesTree(nodeModulesPath, { packageFilter = () => true 
         return subPackage;
     });
 
+    // Filtering
     subPackages = subPackages.flat().filter((subPackage) => {
-        return packageFilter(normalisePackageName(subPackage));
+        const name = normalisePackageName(subPackage);
+
+        if (showLocalProjectsOnly) {
+            return projectNames.includes(name) && packageFilter(name);
+        }
+
+        return packageFilter(name);
     });
 
     // subPackage is "packageName" or "@scoped/packageName" or "@scoped\packageName"

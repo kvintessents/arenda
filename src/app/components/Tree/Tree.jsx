@@ -2,8 +2,16 @@ import React from 'react';
 import PackageName from './PackageName';
 import cx from 'classnames';
 
-export default function Tree({ tree }) {
-    tree = Array.isArray(tree) ? tree : [];
+export default function Tree({
+    tree = null,
+    project = null,
+    onLinkRequest = () => {},
+    onUnlinkRequest = () => {},
+    currentlyLinking = null,
+}) {
+    if (!Array.isArray(tree)) {
+        return null;
+    }
 
     return (
         <ul className="branch">
@@ -15,10 +23,22 @@ export default function Tree({ tree }) {
                         'root-node': pckg.root
                     })}
                 >
-                    <PackageName pckg={pckg} />
-                    
+                    <PackageName
+                        pckg={pckg}
+                        project={project}
+                        onLinkRequest={onLinkRequest}
+                        onUnlinkRequest={onUnlinkRequest}
+                        currentlyLinking={currentlyLinking}
+                    />
+
                     { pckg.modules.length ?
-                        <Tree tree={pckg.modules} />
+                        <Tree
+                            tree={pckg.modules}
+                            project={project || pckg}
+                            onLinkRequest={onLinkRequest}
+                            onUnlinkRequest={onUnlinkRequest}
+                            currentlyLinking={currentlyLinking}
+                        />
                     : null}
                 </li>
             ))}

@@ -6,23 +6,6 @@ body {
     padding: 0;
 }
 
-.link-label {
-    background: #4a9bff;
-    color: #fff;
-    font-size: 0.75em;
-    padding: 0.1em 0.5em;
-    border-radius: 0.33em;
-}
-
-.name {
-    margin-right: 0.5em;
-    color: #ccc;
-}
-
-.root-name {
-    color: #fafafa;
-}
-
 .branch {
     padding: 0;
     margin: 0;
@@ -34,7 +17,7 @@ body {
     margin: 0;
     list-style-type: none;
     padding-left: 2em;
-    line-height: 1.5em;
+    line-height: 2em;
 }
 
 .root-node {

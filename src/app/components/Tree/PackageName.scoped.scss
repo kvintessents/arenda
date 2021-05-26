@@ -21,6 +21,7 @@
 
 .name {
     color: #ccc;
+    margin-right: 0.5em;
 }
 
 .root-name {
@@ -28,21 +29,24 @@
 }
 
 .link-button, .unlink-button {
-    font-size: 0.9em;
+    text-align: center;
     margin: 0;
-    padding: 0;
     border: 0;
     background: transparent;
     margin-right: 1em;
     background: #404040;
     color: #cecece;
-    padding: 0.1em 0.5em;
+    padding: 0.2em 0em;
+    height: 1.5em;
+    width: 1.5em;
     border-radius: 0.33em;
     cursor: pointer;
+    box-sizing: border-box;
+    position: relative;
+    top: 0.2em;
 }
 
 .link-button:hover {
-    
     text-decoration: underline;
     background: #525252;
 }
@@ -55,4 +59,16 @@
 .unlink-button:hover {
     text-decoration: underline;
     background: #338fff;
+}
+
+.npm-ci-button {
+    background: transparent;
+    color: #aaa;
+    border: 0;
+    border-radius: 0.33em;
+}
+
+.npm-ci-button:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
 }

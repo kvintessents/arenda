@@ -6,7 +6,7 @@ import Filter from '../components/Filter/Filter.jsx';
 
 import './TreePage.scoped.scss';
 
-import { link, unlink } from '../commands';
+import { link, unlink, ci } from '../commands';
 
 export default function TreePage({ initTree, initFilterValue, baseDir }) {
     const [tree, setTree] = useState(initTree);
@@ -26,10 +26,11 @@ export default function TreePage({ initTree, initFilterValue, baseDir }) {
         refreshTree();
     }
 
-    async function onLinkRequest(pckg, project) {
+    async function onLinkRequest(pckg) {
         setCurrentlyLinking(pckg);
         const packageProject = tree.find(project => project.name === pckg.name);
-        const output = await link(project, packageProject);
+        const parentProject = tree.find(project => project.name === pckg.parent.name);
+        const output = await link(parentProject, packageProject);
         console.log(output);
         setCurrentlyLinking(null);
         refreshTree();
@@ -40,6 +41,20 @@ export default function TreePage({ initTree, initFilterValue, baseDir }) {
         setCurrentlyLinking(pckg);
         const packageProject = tree.find(project => project.name === pckg.name);
         const output = await unlink(project, packageProject);
+        console.log(output);
+        setCurrentlyLinking(null);
+        refreshTree();
+    }
+
+    async function onNpmCiRequest(project) {
+        console.log('Got NPM CI request');
+        setCurrentlyLinking(project);
+        let output;
+        try {
+            output = await ci(project);
+        } catch (e) {
+            console.error(e);
+        }
         console.log(output);
         setCurrentlyLinking(null);
         refreshTree();
@@ -59,6 +74,7 @@ export default function TreePage({ initTree, initFilterValue, baseDir }) {
                 tree={tree}
                 onLinkRequest={onLinkRequest}
                 onUnlinkRequest={onUnlinkRequest}
+                onNpmCiRequest={onNpmCiRequest}
                 currentlyLinking={currentlyLinking}
             />
         </div>

@@ -50,27 +50,29 @@ async function getGitTree(rootPath, { packageFilter = defaultFilter } = {}) {
     );
 
     const projectTree = await map(namedProjects, async ({ name, path }) => {
-        return {
+        const project = {
             name: name,
             path: path,
             linkable: false,
             linked: false,
             root: true,
-            modules: await getNodeModulesTree(
-                join(path, 'node_modules'),
-                {
-                    packageFilter,
-                    projectNames: namedProjects.map(({ name }) => name),
-                    showLocalProjectsOnly: true,
-                },
-            ),
+            modules: [],
         }
+
+        project.modules = await getNodeModulesTree(join(path, 'node_modules'), {
+            packageFilter,
+            projectNames: namedProjects.map(({ name }) => name),
+            showLocalProjectsOnly: true,
+            parent: project,
+        });
+        
+        return project;
     });
 
     return projectTree;
 }
 
-async function getNodeModulesTree(nodeModulesPath, { packageFilter, showLocalProjectsOnly, projectNames } = {}) {
+async function getNodeModulesTree(nodeModulesPath, { packageFilter, showLocalProjectsOnly, projectNames, parent } = {}) {
     if (!(await exists(nodeModulesPath))) {
         return [];
     }
@@ -106,16 +108,22 @@ async function getNodeModulesTree(nodeModulesPath, { packageFilter, showLocalPro
         const subModulesPath = join(nodeModulesPath, subPackage, 'node_modules');
 
         const name = normalisePackageName(subPackage);
-        const modules = await getNodeModulesTree(subModulesPath, { packageFilter, showLocalProjectsOnly, projectNames });
 
-        return {
+        const packageObject = {
             name: name,
             path: path,
             linkable: projectNames.includes(name),
             linked: fileInfo.isSymbolicLink(),
             root: false,
-            modules: modules
-        }
+            modules: [],
+            parent: parent,
+        };
+
+        packageObject.modules = await getNodeModulesTree(subModulesPath, {
+            packageFilter, showLocalProjectsOnly, projectNames, parent: packageObject
+        });
+
+        return packageObject;
     });
 
     return subPackages;

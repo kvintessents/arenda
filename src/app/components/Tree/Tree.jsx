@@ -7,6 +7,7 @@ export default function Tree({
     project = null,
     onLinkRequest = () => {},
     onUnlinkRequest = () => {},
+    onNpmCiRequest = () => {},
     currentlyLinking = null,
 }) {
     if (!Array.isArray(tree)) {
@@ -28,6 +29,7 @@ export default function Tree({
                         project={project}
                         onLinkRequest={onLinkRequest}
                         onUnlinkRequest={onUnlinkRequest}
+                        onNpmCiRequest={onNpmCiRequest}
                         currentlyLinking={currentlyLinking}
                     />
 
@@ -37,6 +39,7 @@ export default function Tree({
                             project={project || pckg}
                             onLinkRequest={onLinkRequest}
                             onUnlinkRequest={onUnlinkRequest}
+                            onNpmCiRequest={onNpmCiRequest}
                             currentlyLinking={currentlyLinking}
                         />
                     : null}
